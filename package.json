@@ -1,0 +1,27 @@
+{
+  "name": "parkourengine",
+  "version": "1.0.0",
+  "description": "The makings of 3D Parkour",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "sanitize-html": "2.3.2",
+    "socket.io": "^2.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  },
+  "scripts": {
+    "start": "nodemon ./index.js"
+  },
+  "author": "Simeon",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SimeoW/parkour.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SimeoW/parkour/issues"
+  },
+  "homepage": "https://github.com/SimeoW/parkour#readme"
+}
