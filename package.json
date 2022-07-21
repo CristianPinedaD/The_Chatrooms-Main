@@ -9,10 +9,9 @@
     "socket.io": "^2.4.0"
   },
   "devDependencies": {
-    "node": "^2.0.19"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node ./index.js"
   },
   "author": "Cristian",
   "repository": {
