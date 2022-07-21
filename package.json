@@ -1,7 +1,7 @@
 {
-  "name": "parkourengine",
-  "version": "1.0.0",
-  "description": "The makings of 3D Parkour",
+  "name": "thechatrooms",
+  "version": "1.1.1",
+  "description": "A chatroom",
   "main": "index.js",
   "dependencies": {
     "express": "^4.17.1",
@@ -9,19 +9,22 @@
     "socket.io": "^2.4.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "node": "^2.0.19"
   },
   "scripts": {
-    "start": "nodemon ./index.js"
+    "start": "node index.js"
   },
-  "author": "Simeon",
-  "license": "ISC",
+  "author": "Cristian",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SimeoW/parkour.git"
+    "url": "git+https://github.com/CristianPinedaD/The_Chatrooms-Main.git"
+
   },
   "bugs": {
-    "url": "https://github.com/SimeoW/parkour/issues"
+    "url": "https://github.com/CristianPinedaD/The_Chatrooms-Main/issues"
   },
-  "homepage": "https://github.com/SimeoW/parkour#readme"
+  "homepage": "https://github.com/CristianPinedaD/The_Chatrooms-Main#readme",
+  "directories": {
+    "lib": "lib"
+  }
 }
