@@ -37,8 +37,9 @@
 			}
 
 			#chatFeed {
+				table-layout: fixed;
 				width: 100%;
-				padding: 10px;
+				word-wrap: break-word;
 			}
 
 			#chatFeedUserColumn {
@@ -46,7 +47,16 @@
 			}
 
 			#chatFeedMessageColumn {
-				width: calc(100% - 80px);
+				padding: 0;
+				overflow-x: wrap;
+				word-wrap: break-word;
+				/*width: calc(100% - 80px);*/
+
+			}
+
+			#chatFeed button {
+				margin: 0;
+				float: right;
 			}
 
 			.serverMessage {
@@ -139,25 +149,33 @@
 			crypto.setCounter(key);
 			console.log(crypto);
 			let ciphertext = crypto.encrypt(message);
-			socket.emit('broadcastMessage', ciphertext);
+			if(ciphertext.length > 0) {
+				socket.emit('broadcastMessage', ciphertext);
+			}
 			chatBar.value = '';
 		}
 
 		function receiveMessage(user, message) {
 			let html = '';
 			html += '<tr>';
-			html += '<td>' + user + ":" + '</td>'
-			html += '<td>' + message + '</td>'
+
 			if(user != ''){
-			html += '<td><button onclick= "decryptMessage(this)">Decrypt</button></td>'
-		}
-			html += '</tr>'
+				html += '<td>' + user + ":" + '</td>';
+			} else {
+				html += '<td></td>';
+			}
+			html += '<td><span>' + message + '</span>';
+
+			if(user != ''){
+				html += '<button onclick= "decryptMessage(this)">Decrypt</button></td>';
+			}
+			html += '</td>';
+			html += '</tr>';
 			//chatFeed.innerHTML = html + chatFeed.innerHTML;
 			chatFeed.innerHTML += html;
 		}
 		function decryptMessage(button){
-			let ciphertext = button.parentElement.parentElement.childNodes[1];
-
+			let ciphertext = button.parentElement.childNodes[0];
 			
 			ciphertext.innerText = crypto.decrypt(ciphertext.innerText);
 			button.remove();
