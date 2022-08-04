@@ -90,21 +90,20 @@ io.on('connection', (socket) => {
 	socket.on('initialize', (name, room) => {
 
 		if(socket.initialized) return; // Already initialized
-		socket.initialized = true;
 		name = sanitizeHtml(name).replace(/[^A-Za-z0-9_]/g, '').substring(0, 32);
 		room = sanitizeHtml(room).replace(/[^A-Za-z0-9 ]/g, '').replace(/\s+/g, ' ').trim().substring(0, 32);
 		room = room.charAt(0).toUpperCase() + room.slice(1).toLowerCase();
 
 		// Don't allow blank names
 		if(name == '') {
-			socket.emit('initializeResponse', room, 'Invalid name.');
+			socket.emit('initializeResponse', room, 'Invalid name, try another.');
 			return;
 		}
 
 		// Don't allow any duplicate names
 		users = getUserList(room);
 		if(name != 'Guest' && users.includes(name)) {
-			socket.emit('initializeResponse', room, 'Name already exists.');
+			socket.emit('initializeResponse', room, 'Sorry, that name already exists in room ' + room + '!');
 			return;
 		}
 
@@ -113,6 +112,7 @@ io.on('connection', (socket) => {
 
 		socket.join(room);
 		socket.emit('initializeResponse', room, '');
+		socket.initialized = true;
 		if(roomMessages[room] !== undefined){
 			for(let i = 0; i < roomMessages[room].length; i++){
 				let messageName = roomMessages[room][i][0];

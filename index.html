@@ -4,7 +4,7 @@
 		<meta charset='utf-8'/>
 		<meta name='viewport' content='user-scalable=no, shrink-to-fit=no, width=device-width, initial-scale=1, maximum-scale=1'>
 		<meta name='description' content='The Chatrooms Main'>
-		<title>Chat Room</title>
+		<title>The Chatrooms Main</title>
 		<link href='lib/bootstrap.min.css' rel='stylesheet'>
 		<style>
 			body {
@@ -126,12 +126,17 @@
 		let userName = 'Guest';
 		let serverName = null;
 
+		if(localStorage.getItem('name') != null) {
+			let name = localStorage.getItem('name');
+			setName(name);
+			userNameInput.value = userName;
+		}
+
 		changeRoom();
 
 		socket.on('initializeResponse', function(newServerName, errorMessage) {
 			if(errorMessage != '') {
-				userName = prompt(errorMessage + ' What is your name?');
-				socket.emit('initialize', userName, serverName);
+				alert(errorMessage);
 			} else {
 				serverName = newServerName;
 				connected();
@@ -202,14 +207,20 @@
 		}
 
 		function setName(name) {
-			name = name.replace(/[^A-Za-z0-9_]/g, '').substring(0, 32);
+			name = name.replace(/[^A-Za-z0-9_]/g, '').trim().substring(0, 32);
+			if(name == '') name = 'Guest';
 			name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-			document.getElementById('yourName').innerText = ' ' + name; 
+			document.getElementById('yourName').innerText = ' ' + name;
 			userName = name;
+			if(name != 'Guest') {
+				localStorage.setItem('name', name);
+			} else {
+				localStorage.removeItem('name');
+			}
 		}
 
 		function wipeEmptyRooms() {
-			if(!confirm('Are you sure you\'d like to wipe all the conversations from unoccupied rooms?')) return;
+			if(!confirm('Are you sure you\'d like to wipe all the conversations from the unoccupied rooms?')) return;
 			socket.emit('wipeEmptyRooms');
 			alert('All unoccupied room conversations have been cleared.')
 			location.reload();
