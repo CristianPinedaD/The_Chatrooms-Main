@@ -61,19 +61,22 @@ function getRoomList() {
 	return list;
 }
 
-
+let roomMessages = {
+//	'Lobby': ['Bob', 'Hello']
+};
 // Called when a user connects
 io.on('connection', (socket) => {
 	socket.user = {
 		'name': '',
 		'room': '',
 		'ipaddress': socket.handshake.address,
+
 	}
 
 	console.log(socket.user.ipaddress + ' connected.');
 
 	socket.on('initialize', (name, room) => {
-		console.log(room)
+
 		if(socket.initialized) return; // Already initialized
 		socket.initialized = true;
 		name = sanitizeHtml(name).replace(/[^A-Za-z0-9_]/g, '').substring(0, 32);
@@ -98,6 +101,16 @@ io.on('connection', (socket) => {
 
 		socket.join(room);
 		socket.emit('initializeResponse', room, '');
+		if(roomMessages[room] !== undefined){
+			for(let i = 0; i < roomMessages[room].length; i++){
+				let messageName = roomMessages[room][i][0];
+				let messageMessage = roomMessages[room][i][1];
+
+				socket.emit('chat', messageName, messageMessage);
+			}
+		}
+
+
 		io.in(room).emit('chat', '', name + ' joined ' + room + '.<br>Users online: [' + getUserList(socket.user.room).join(', ') + ']');
 	});
 
@@ -124,6 +137,22 @@ io.on('connection', (socket) => {
 		if(socket.user.name == '') return;
 		message = sanitizeHtml(message).trim().substring(0, 256);
 		if(message == '') return;
+
+        //if the room does not exist inside the server, set it
+		if(roomMessages[socket.user.room] == undefined){
+			roomMessages[socket.user.room] = [];
+			// Sybil/DoS resistance
+			let servers = Object.keys(roomMessages);
+			while(servers.length > 100){
+				delete roomMessages[servers[0]];
+				servers = Object.keys (roomMessages);
+			}
+
+		}
+		roomMessages[socket.user.room].push([socket.user.name, message]);
+        while(roomMessages[socket.user.room].length > 100){
+        	roomMessages[socket.user.room].shift(); // Remove the oldest messages until the length is achieved
+        }
 		io.in(socket.user.room).emit('chat', socket.user.name, message);
 	});
 

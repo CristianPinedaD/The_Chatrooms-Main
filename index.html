@@ -8,7 +8,7 @@
 		<link href='lib/bootstrap.min.css' rel='stylesheet'>
 		<style>
 			body {
-				background-color: #000000;
+				background-color: #1a1a1a;
 			}
 
 			#joinContainer {
@@ -20,9 +20,7 @@
 				float: right;
 			}
 
-			#chatContainer {
-				background-color: #CD19FF;
-			}
+			
 
 			.container {
 				padding: 20px;
@@ -52,9 +50,9 @@
 				float: right;
 			}
 
-			.serverMessage {
-				background-color: #FF0F00;
-				font-style: italic;
+			
+			#goBack{
+				float:  left;
 			}
 
 		</style>
@@ -85,9 +83,11 @@
 
 			</div>
 		</div>
-		<div id='chatContainer' class='container text-light' hidden>
+		<div id='chatContainer' class='container text-light bg-dark' hidden>
 			<div class='jumbotron mt-3'>
-				<center><h1 id='title' class='display-2' onclick='location.reload()'>Chatroom</h1></center>
+				<button id='goBack' onclick='location.reload()' class='btn btn-light'>Go back</button>
+
+				<center><h1 id='title' class='display-2'>Chatroom</h1></center>
 				<hr>
 
 				<table id='chatFeed' class='table  table-borderless text-light'></table>
@@ -151,12 +151,10 @@
 
 			}
 			crypto = new AES.Crypto(key);
-			//crypto.setCounter(crypto.getCounter());
 
 			document.getElementById('title').innerText = serverName;
 			document.getElementById('joinContainer').hidden = true;
 			document.getElementById('chatContainer').hidden = false;
-			document.body.style.backgroundColor = '#8000A3';
 		}
 
 		function changeRoom() {
@@ -170,14 +168,7 @@
 				}
 				document.getElementById('serverList').innerHTML = html;
 
-				// let roomsString = '';
-				// for(let room of rooms) {
-				// 	roomsString += '"' + room[0] + '" has ' + room[1] + ' users\n';
-				// }
-				// let newServerName = prompt(roomsString + '\nPlease enter a room to join:', serverName || 'Lobby') || serverName;
-				// if(newServerName != serverName) {
-				// 	socket.emit('initialize', userName, newServerName);
-				// }
+	
 			});
 		}
 
@@ -190,9 +181,14 @@
 
 
 		function sendMessage(message) {
+			let padding = '', paddingLength= Math.ceil(message.length / 29)*29 - message.length;
+			for(let i = 0; i < paddingLength; i++ ){
+				padding += ' ';
+			}
+
 			crypto.setCounter(key);
 			console.log(crypto);
-			let ciphertext = crypto.encrypt(message);
+			let ciphertext = crypto.encrypt(message + padding);
 			if(ciphertext.length > 0) {
 				socket.emit('broadcastMessage', ciphertext);
 			}
