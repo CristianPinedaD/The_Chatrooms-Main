@@ -84,8 +84,8 @@
 				<table id='serverList' class='table  table-borderless table-hover table-dark table-condensed'></table>
 
 				<div class='btn-group w-100' role='group'>
-					<button class='btn btn-secondary btn-sm' type='button' onclick='wipeEmptyRooms()'>Wipe Conversations</button>
-					<button class='btn btn-light btn-sm' type='button' onclick='newServer()'>New Server</button>
+					<button class='btn btn-secondary btn-sm w-25' type='button' onclick='wipeEmptyRooms()'>Clear</button>
+					<button class='btn btn-secondary btn-sm w-75' type='button' onclick='newServer()'>New Server</button>
 				</div>
 
 			</div>
@@ -194,8 +194,9 @@
 		}
 
 		function wipeEmptyRooms() {
+			if(!confirm('Are you sure you\'d like to wipe all the conversations from unoccupied rooms?')) return;
 			socket.emit('wipeEmptyRooms');
-			alert('All unoccupied room conversations have been wiped from the server.')
+			alert('All unoccupied room conversations have been cleared.')
 			location.reload();
 		}
 
@@ -250,6 +251,7 @@
 		}
 
 		function clearChat() {
+			if(!confirm('Are you sure you\'d like to clear the messages from this room?')) return;
 			socket.emit('clearChat');
 		}
 	</script>
