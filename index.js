@@ -49,9 +49,9 @@ function getRoomList() {
 		}
 	}
 	let messageRooms = Object.keys(roomMessages);
-	for(let i = 5; i >= 1; i--) {
+	for(let i = 1; i <= 5; i++) {
 		if(!messageRooms.includes('Lobby ' + i)) {
-			messageRooms.unshift('Lobby ' + i);
+			messageRooms.push('Lobby ' + i);
 		}
 	}
 	for(let room of messageRooms) {

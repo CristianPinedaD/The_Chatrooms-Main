@@ -11,6 +11,12 @@
 				background-color: #1a1a1a;
 			}
 
+			.fixOverflow {
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
 			#joinContainer {
 				max-width: 700px;
 			}
@@ -52,10 +58,12 @@
 			
 			#goBack{
 				float: left;
+				margin-right: 20px;
 			}
 			
 			#clearChat{
 				float: right;
+				margin-left: 20px;
 			}
 
 		</style>
@@ -70,14 +78,14 @@
 		<div id='joinContainer' class='container text-light bg-dark'>
 			<div class='jumbotron mt-3'>
 				<center>
-					<h1 class='display-2'>Welcome</h1>
+					<h1 class='display-2 fixOverflow'>Welcome<span id='yourName'></span></h1>
 					<span class='lead'>You have noclipped into The Chatrooms</span>
 				</center>
 				<hr>
 				<div class='form-group row'>
 					<label for='userNameInput' class='col-sm-2 col-form-label'>Your name?</label>
 					<div class='col-sm-10'>
-						<input type='text' class='form-control' id='userNameInput' placeholder='Guest' oninput="userName=this.value">
+						<input type='text' class='form-control' id='userNameInput' placeholder='Guest' oninput='setName(this.value)' onchange='this.value = userName'>
 					</div>
 				</div>
 				<hr>
@@ -95,7 +103,7 @@
 				<button id='goBack' onclick='location.reload()' class='btn btn-light'>Go back</button>
 				<button id='clearChat' onclick='clearChat()' class='btn btn-dark text-secondary'>Clear chat</button>
 
-				<center><h1 id='title' class='display-2'>Chatroom</h1></center>
+				<center><h1 id='title' class='display-2 fixOverflow'>Chatroom</h1></center>
 				<hr>
 
 				<table id='chatFeed' class='table  table-borderless text-light'></table>
@@ -191,6 +199,13 @@
 
 	
 			});
+		}
+
+		function setName(name) {
+			name = name.replace(/[^A-Za-z0-9_]/g, '').substring(0, 32);
+			name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+			document.getElementById('yourName').innerText = ' ' + name; 
+			userName = name;
 		}
 
 		function wipeEmptyRooms() {
