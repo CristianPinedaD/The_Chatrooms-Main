@@ -21,6 +21,9 @@ app.get('/lib/:file', (req, res) => {
 });
 
 
+let roomMessages = {
+	// 'Lobby': ['Bob', 'Hello']
+};
 
 
 // Returns an array of usernames in a room
@@ -35,35 +38,44 @@ function getUserList(room) {
 	return list;
 }
 
-// Returns a list of room and how many users are in each room
+// Returns a list of room and how many users are in each room, and the number of messages in each room
 function getRoomList() {
 	let list = [];
 	let rooms = io.sockets.adapter.rooms;
 	for(let room in rooms) {
 		if(room == 'undefined') continue;
 		if (!rooms[room].sockets.hasOwnProperty(room)) {
-			list.push([room, rooms[room].length]);
+			list.push([room, rooms[room].length, 0]);
 		}
 	}
-	for(let i = 0; i < 5; i++) {
-		let room = 'Lobby ' + (i + 1);
-		let exists = false;
-		for(let item of list) {
-			if(room == item[0]) {
-				exists = true;
+	let messageRooms = Object.keys(roomMessages);
+	for(let i = 1; i <= 5; i++) {
+		if(!messageRooms.includes('Lobby ' + i)) {
+			messageRooms.push('Lobby ' + i);
+		}
+	}
+	for(let room of messageRooms) {
+		let index = -1;
+		for(let i in list) {
+			if(room == list[i][0]) {
+				index = i;
 				break;
 			}
 		}
-		if(!exists) {
-			list.push([room, 0]);
+		let numMessages = 0;
+		if(roomMessages[room] !== undefined) {
+			// Count the number of messages in a room
+			numMessages = roomMessages[room].length;
+		}
+		if(index == -1) {
+			list.push([room, 0, numMessages]);
+		} else {
+			list[index][2] = numMessages;
 		}
 	}
 	return list;
 }
 
-let roomMessages = {
-//	'Lobby': ['Bob', 'Hello']
-};
 // Called when a user connects
 io.on('connection', (socket) => {
 	socket.user = {
@@ -78,21 +90,20 @@ io.on('connection', (socket) => {
 	socket.on('initialize', (name, room) => {
 
 		if(socket.initialized) return; // Already initialized
-		socket.initialized = true;
 		name = sanitizeHtml(name).replace(/[^A-Za-z0-9_]/g, '').substring(0, 32);
 		room = sanitizeHtml(room).replace(/[^A-Za-z0-9 ]/g, '').replace(/\s+/g, ' ').trim().substring(0, 32);
 		room = room.charAt(0).toUpperCase() + room.slice(1).toLowerCase();
 
 		// Don't allow blank names
 		if(name == '') {
-			socket.emit('initializeResponse', room, 'Invalid name.');
+			socket.emit('initializeResponse', room, 'Invalid name, try another.');
 			return;
 		}
 
 		// Don't allow any duplicate names
 		users = getUserList(room);
 		if(name != 'Guest' && users.includes(name)) {
-			socket.emit('initializeResponse', room, 'Name already exists.');
+			socket.emit('initializeResponse', room, 'Sorry, that name already exists in room ' + room + '!');
 			return;
 		}
 
@@ -101,6 +112,7 @@ io.on('connection', (socket) => {
 
 		socket.join(room);
 		socket.emit('initializeResponse', room, '');
+		socket.initialized = true;
 		if(roomMessages[room] !== undefined){
 			for(let i = 0; i < roomMessages[room].length; i++){
 				let messageName = roomMessages[room][i][0];
@@ -109,7 +121,6 @@ io.on('connection', (socket) => {
 				socket.emit('chat', messageName, messageMessage);
 			}
 		}
-
 
 		io.in(room).emit('chat', '', name + ' joined ' + room + '.<br>Users online: [' + getUserList(socket.user.room).join(', ') + ']');
 	});
@@ -124,7 +135,6 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('listRooms', (callback) => {
-		//socket.emit('roomsList', getRoomList());
 		callback(getRoomList());
 	});
 
@@ -154,6 +164,41 @@ io.on('connection', (socket) => {
         	roomMessages[socket.user.room].shift(); // Remove the oldest messages until the length is achieved
         }
 		io.in(socket.user.room).emit('chat', socket.user.name, message);
+	});
+
+	socket.on('clearChat', () => {
+		delete roomMessages[socket.user.room];
+
+		let clearedMessage = 'Chat history was wiped by ' + socket.user.name;
+		console.log(clearedMessage);
+
+		io.in(socket.user.room).emit('clearedChat');
+
+		setTimeout(function() {
+			io.in(socket.user.room).emit('chat', '', clearedMessage);
+		}, 500); // After 100 milliseconds, alert who cleared it
+	});
+
+	socket.on('wipeEmptyRooms', () => {
+		let rooms = Object.keys(roomMessages);
+		let occupiedRooms = getRoomList();
+		for(let room of rooms) {
+			let occupied = false;
+			for(let room2 of occupiedRooms) {
+				if(room2[0] == room) {
+					if(room2[1] > 0) {
+						occupied = true;
+					}
+					break;
+				}
+			}
+
+			if(!occupied) {
+				console.log('Deleting room ' + room);
+				delete roomMessages[room]
+			}
+
+		}
 	});
 
 });
