@@ -49,10 +49,13 @@
 				margin: 0;
 				float: right;
 			}
-
 			
 			#goBack{
-				float:  left;
+				float: left;
+			}
+			
+			#clearChat{
+				float: right;
 			}
 
 		</style>
@@ -79,13 +82,18 @@
 				</div>
 				<hr>
 				<table id='serverList' class='table  table-borderless table-hover table-dark table-condensed'></table>
-				<button class='btn btn-secondary btn-sm w-100' type='button' onclick='newServer()'>New Server</button>
+
+				<div class='btn-group w-100' role='group'>
+					<button class='btn btn-secondary btn-sm' type='button' onclick='wipeEmptyRooms()'>Wipe Conversations</button>
+					<button class='btn btn-light btn-sm' type='button' onclick='newServer()'>New Server</button>
+				</div>
 
 			</div>
 		</div>
 		<div id='chatContainer' class='container text-light bg-dark' hidden>
 			<div class='jumbotron mt-3'>
 				<button id='goBack' onclick='location.reload()' class='btn btn-light'>Go back</button>
+				<button id='clearChat' onclick='clearChat()' class='btn btn-dark text-secondary'>Clear chat</button>
 
 				<center><h1 id='title' class='display-2'>Chatroom</h1></center>
 				<hr>
@@ -105,11 +113,10 @@
 	<script type='text/javascript'>
 		'use strict';
 		
-		let key,crypto;
+		let key, crypto;
 		let socket = io();
 		let userName = 'Guest';
 		let serverName = null;
-
 
 		changeRoom();
 
@@ -134,6 +141,10 @@
 
 		socket.on('chat', receiveMessage);
 
+		socket.on('clearedChat', function() {
+			chatFeed.innerHTML = '';
+		});
+
 		// Pressing enter sends the message
 		chatBar.addEventListener('keydown', function(e) {
 			if (e.keyCode == 13) sendMessage(chatBar.value);
@@ -151,6 +162,7 @@
 
 			}
 			crypto = new AES.Crypto(key);
+			crypto.setCounter(key);
 
 			document.getElementById('title').innerText = serverName;
 			document.getElementById('joinContainer').hidden = true;
@@ -163,13 +175,28 @@
 				for(let room of rooms) {
 					html += '<tr>';
 					let bg = room[1] == 0 ? 'bg-secondary' : 'bg-primary';
-					html += '<td><span class="lead">' + room[0] + '</span> <span class="mx-3 badge ' + bg + '">Users online: ' + room[1] + '</span><button class="joinButton btn btn-sm btn-secondary" onclick="socket.emit(\'initialize\', userName, \'' + room[0] + '\')">Join Server</button></td>';
+					html += '<td><span class="lead">' + room[0] + '</span> ';
+					html += '<span class="mx-3 badge ' + bg + '">Users online: ' + room[1];
+
+					let numberOfMessages = room[2];
+					if(numberOfMessages > 0) {
+						html += ', messages: ' + numberOfMessages;
+					}
+
+					html += '</span>';
+					html += '<button class="joinButton btn btn-sm btn-secondary" onclick="socket.emit(\'initialize\', userName, \'' + room[0] + '\')">Join Server</button></td>';
 					html += '</tr>';
 				}
 				document.getElementById('serverList').innerHTML = html;
 
 	
 			});
+		}
+
+		function wipeEmptyRooms() {
+			socket.emit('wipeEmptyRooms');
+			alert('All unoccupied room conversations have been wiped from the server.')
+			location.reload();
 		}
 
 		function newServer() {
@@ -181,7 +208,7 @@
 
 
 		function sendMessage(message) {
-			let padding = '', paddingLength= Math.ceil(message.length / 29)*29 - message.length;
+			let padding = '', paddingLength= Math.ceil(message.length / 30)*30 - message.length;
 			for(let i = 0; i < paddingLength; i++ ){
 				padding += ' ';
 			}
@@ -214,11 +241,16 @@
 			//chatFeed.innerHTML = html + chatFeed.innerHTML;
 			chatFeed.innerHTML += html;
 		}
+
 		function decryptMessage(button){
 			let ciphertext = button.parentElement.childNodes[0];
 			
 			ciphertext.innerText = crypto.decrypt(ciphertext.innerText);
 			button.remove();
+		}
+
+		function clearChat() {
+			socket.emit('clearChat');
 		}
 	</script>
 </html>
