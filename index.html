@@ -178,10 +178,10 @@
 					html += '<td><span class="lead">' + room[0] + '</span> ';
 					html += '<span class="mx-3 badge ' + bg + '">Users online: ' + room[1];
 
-					let numberOfMessages = room[2];
-					if(numberOfMessages > 0) {
-						html += ', messages: ' + numberOfMessages;
-					}
+					// let numberOfMessages = room[2];
+					// if(numberOfMessages > 0) {
+					// 	html += ', messages: ' + numberOfMessages;
+					// }
 
 					html += '</span>';
 					html += '<button class="joinButton btn btn-sm btn-secondary" onclick="socket.emit(\'initialize\', userName, \'' + room[0] + '\')">Join Server</button></td>';
