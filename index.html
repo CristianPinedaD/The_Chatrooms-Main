@@ -1,52 +1,55 @@
 <!DOCTYLE html>
-<html>
+<html lang='en'>
 	<head>
 		<meta charset='utf-8'/>
-		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+		<meta name='viewport' content='user-scalable=no, shrink-to-fit=no, width=device-width, initial-scale=1, maximum-scale=1'>
+		<meta name='description' content='The Chatrooms Main'>
 		<title>Chat Room</title>
+		<link href='lib/bootstrap.min.css' rel='stylesheet'>
 		<style>
-
 			body {
-				background-color: #8000A3;
-				font-family: Arial, Helvetica, sans-serif;
+				background-color: #000000;
 			}
 
-			.wrapper {
+			#joinContainer {
+				max-width: 700px;
+			}
+
+			.joinButton {
+				width: 100px;
+				float: right;
+			}
+
+			#chatContainer {
 				background-color: #CD19FF;
+			}
+
+			.container {
 				padding: 20px;
 				margin: 0 auto;
-				max-width: 800px;
 				min-width: 200px;
 				border-radius: 8px;
 			}
 
-			#roomBtn {
-				width: 80px;
-				margin: 0;
-			}
-
-			#chatBar {
-				width: calc(100% - 85px);
-				text-align: center;
-				margin: 0;
-			}
-
-			#chatBarBtn {
-				width: 80px;
-				margin: 0;
-			}
-
 			#chatFeed {
+				table-layout: fixed;
 				width: 100%;
-				padding: 10px;
+				word-wrap: break-word;
 			}
 
 			#chatFeedUserColumn {
-				width: 80px;
+				width: 100px;
 			}
 
 			#chatFeedMessageColumn {
-				width: calc(100% - 80px);
+				padding: 0;
+				overflow-x: wrap;
+				word-wrap: break-word;
+			}
+
+			#chatFeed button {
+				margin: 0;
+				float: right;
 			}
 
 			.serverMessage {
@@ -55,26 +58,59 @@
 			}
 
 		</style>
+
 		<script type='text/javascript' src='lib/socket.io.js'></script>
 		<script type='text/javascript' src='lib/aes.js'></script>
+		<script src='lib/bootstrap.bundle.min.js'></script>
+
+
 	</head>
 	<body>
-		<div class='wrapper'>
-			<center><h3 id='title'></h3></center>
-			
-			<table id='chatFeed'>
-			</table>
-			<input id='chatBar' type='text' placeholder='Enter a message' maxlength='256'/>
-			<button id='chatBarBtn' onclick='sendMessage(chatBar.value)'>Send</button>
+		<div id='joinContainer' class='container text-light bg-dark'>
+			<div class='jumbotron mt-3'>
+				<center>
+					<h1 class='display-2'>Welcome</h1>
+					<span class='lead'>You have noclipped into The Chatrooms</span>
+				</center>
+				<hr>
+				<div class='form-group row'>
+					<label for='userNameInput' class='col-sm-2 col-form-label'>Your name?</label>
+					<div class='col-sm-10'>
+						<input type='text' class='form-control' id='userNameInput' placeholder='Guest' oninput="userName=this.value">
+					</div>
+				</div>
+				<hr>
+				<table id='serverList' class='table  table-borderless table-hover table-dark table-condensed'></table>
+				<button class='btn btn-secondary btn-sm w-100' type='button' onclick='newServer()'>New Server</button>
+
+			</div>
 		</div>
+		<div id='chatContainer' class='container text-light' hidden>
+			<div class='jumbotron mt-3'>
+				<center><h1 id='title' class='display-2' onclick='location.reload()'>Chatroom</h1></center>
+				<hr>
+
+				<table id='chatFeed' class='table  table-borderless text-light'></table>
+
+				<div class='input-group mb-3'>
+					<input id='chatBar' type='text' class='form-control text-center' placeholder='Enter a message'>
+					<div class='input-group-append'>
+						<button id='chatBarBtn' class='btn  btn-primary' type='button' onclick='sendMessage(chatBar.value)'>Send</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</body>
 	<script type='text/javascript'>
 		'use strict';
-		alert("You have noclipped into The Chatrooms");
+		
 		let key,crypto;
 		let socket = io();
-		let userName = prompt('What is your name?', 'Guest') || 'Guest';
+		let userName = 'Guest';
 		let serverName = null;
+
+
 		changeRoom();
 
 		socket.on('initializeResponse', function(newServerName, errorMessage) {
@@ -105,59 +141,85 @@
 
 
 		function connected() {
-		key = new Array(16);
-		for(let i in serverName){
-			if(i >= key.length){
-				break;
+			key = new Array(16);
+			for(let i in serverName){
+				if(i >= key.length){
+					break;
+				}
+				let c = serverName[i];
+				key[i] = c.charCodeAt(0);
+
 			}
-			let c = serverName[i];
-			key[i] = c.charCodeAt(0);
+			crypto = new AES.Crypto(key);
+			//crypto.setCounter(crypto.getCounter());
 
-		}
-		key[0] = 
-		crypto = new AES.Crypto(key);
-		//crypto.setCounter(crypto.getCounter());
-
-			title.innerText = serverName;
-			chatFeed.innerHTML = '<tr><th id="chatFeedUserColumn"></th><th id="chatFeedMessageColumn"></th></tr>';
+			document.getElementById('title').innerText = serverName;
+			document.getElementById('joinContainer').hidden = true;
+			document.getElementById('chatContainer').hidden = false;
+			document.body.style.backgroundColor = '#8000A3';
 		}
 
 		function changeRoom() {
 			socket.emit('listRooms', function(rooms) {
-				let roomsString = '';
+				let html = '';
 				for(let room of rooms) {
-					roomsString += '"' + room[0] + '" has ' + room[1] + ' users\n';
+					html += '<tr>';
+					let bg = room[1] == 0 ? 'bg-secondary' : 'bg-primary';
+					html += '<td><span class="lead">' + room[0] + '</span> <span class="mx-3 badge ' + bg + '">Users online: ' + room[1] + '</span><button class="joinButton btn btn-sm btn-secondary" onclick="socket.emit(\'initialize\', userName, \'' + room[0] + '\')">Join Server</button></td>';
+					html += '</tr>';
 				}
-				let newServerName = prompt(roomsString + '\nPlease enter a room to join:', serverName || 'Lobby') || serverName;
-				if(newServerName != serverName) {
-					socket.emit('initialize', userName, newServerName);
-				}
+				document.getElementById('serverList').innerHTML = html;
+
+				// let roomsString = '';
+				// for(let room of rooms) {
+				// 	roomsString += '"' + room[0] + '" has ' + room[1] + ' users\n';
+				// }
+				// let newServerName = prompt(roomsString + '\nPlease enter a room to join:', serverName || 'Lobby') || serverName;
+				// if(newServerName != serverName) {
+				// 	socket.emit('initialize', userName, newServerName);
+				// }
 			});
 		}
+
+		function newServer() {
+			let newServerName = prompt('Please enter a room to join:', serverName || 'Lobby') || serverName;
+			if(newServerName != serverName) {
+				socket.emit('initialize', userName, newServerName);
+			}
+		}
+
 
 		function sendMessage(message) {
 			crypto.setCounter(key);
 			console.log(crypto);
 			let ciphertext = crypto.encrypt(message);
-			socket.emit('broadcastMessage', ciphertext);
+			if(ciphertext.length > 0) {
+				socket.emit('broadcastMessage', ciphertext);
+			}
 			chatBar.value = '';
 		}
 
 		function receiveMessage(user, message) {
 			let html = '';
-			html += '<tr>';
-			html += '<td>' + user + ":" + '</td>'
-			html += '<td>' + message + '</td>'
+			html += '<tr class="align-middle">';
+
 			if(user != ''){
-			html += '<td><button onclick= "decryptMessage(this)">Decrypt</button></td>'
-		}
-			html += '</tr>'
+				html += '<td id="chatFeedUserColumn"><span class="lead">' + user + ":" + '</span></td>';
+			} else {
+				html += '<td id="chatFeedUserColumn"></td>';
+			}
+			html += '<td id="chatFeedMessageColumn"><span class="lead">' + message + '</span>';
+
+			if(user != ''){
+				html += '<button class="btn btn-sm btn-dark" onclick= "decryptMessage(this)">Decrypt</button></td>';
+			}
+			html += '</td>';
+			html += '</tr>';
 			//chatFeed.innerHTML = html + chatFeed.innerHTML;
 			chatFeed.innerHTML += html;
 		}
 		function decryptMessage(button){
-			let ciphertext = button.parentElement.parentElement.childNodes[1];
-
+			let ciphertext = button.parentElement.childNodes[0];
 			
 			ciphertext.innerText = crypto.decrypt(ciphertext.innerText);
 			button.remove();

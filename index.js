@@ -45,6 +45,19 @@ function getRoomList() {
 			list.push([room, rooms[room].length]);
 		}
 	}
+	for(let i = 0; i < 5; i++) {
+		let room = 'Lobby ' + (i + 1);
+		let exists = false;
+		for(let item of list) {
+			if(room == item[0]) {
+				exists = true;
+				break;
+			}
+		}
+		if(!exists) {
+			list.push([room, 0]);
+		}
+	}
 	return list;
 }
 
@@ -60,9 +73,11 @@ io.on('connection', (socket) => {
 	console.log(socket.user.ipaddress + ' connected.');
 
 	socket.on('initialize', (name, room) => {
+		console.log(room)
 		if(socket.initialized) return; // Already initialized
+		socket.initialized = true;
 		name = sanitizeHtml(name).replace(/[^A-Za-z0-9_]/g, '').substring(0, 32);
-		room = sanitizeHtml(room).replace(/[^A-Za-z ]/g, '').replace(/\s+/g, ' ').trim().substring(0, 32);
+		room = sanitizeHtml(room).replace(/[^A-Za-z0-9 ]/g, '').replace(/\s+/g, ' ').trim().substring(0, 32);
 		room = room.charAt(0).toUpperCase() + room.slice(1).toLowerCase();
 
 		// Don't allow blank names
