@@ -66,11 +66,15 @@
 				margin-left: 20px;
 			}
 
+			#chatBarBtn {
+				border-radius: 0 5px 5px 0;
+			}
+
 		</style>
 
 		<script type='text/javascript' src='lib/socket.io.js'></script>
 		<script type='text/javascript' src='lib/aes.js'></script>
-		<script src='lib/bootstrap.bundle.min.js'></script>
+		<script type='text/javascript' src='lib/bootstrap.bundle.min.js'></script>
 
 
 	</head>
@@ -92,7 +96,7 @@
 				<table id='serverList' class='table  table-borderless table-hover table-dark table-condensed'></table>
 
 				<div class='btn-group w-100' role='group'>
-					//<button class='btn btn-secondary btn-sm w-25' type='button' onclick='wipeEmptyRooms()'>Clear</button>
+					<!--<button class='btn btn-secondary btn-sm w-25' type='button' onclick='wipeEmptyRooms()'>Clear</button>-->
 					<button class='btn btn-secondary btn-sm w-75' type='button' onclick='newServer()'>New Server</button>
 				</div>
 
@@ -108,10 +112,10 @@
 
 				<table id='chatFeed' class='table  table-borderless text-light'></table>
 
-				<div class='input-group mb-3'>
-					<input id='chatBar' type='text' class='form-control text-center' placeholder='Enter a message'>
+				<div class='input-group mb-3' role='group'>
+					<input id='chatBar' type='text' class='form-control text-center' placeholder='Enter a message' maxlength='512'>
 					<div class='input-group-append'>
-						<button id='chatBarBtn' class='btn  btn-primary' type='button' onclick='sendMessage(chatBar.value)'>Send</button>
+						<button id='chatBarBtn' class='btn btn-primary' type='button' onclick='sendMessage(chatBar.value)'>Send</button>
 					</div>
 				</div>
 			</div>
@@ -180,6 +184,7 @@
 			document.getElementById('title').innerText = serverName;
 			document.getElementById('joinContainer').hidden = true;
 			document.getElementById('chatContainer').hidden = false;
+			chatBar.focus();
 		}
 
 		function changeRoom() {
@@ -219,12 +224,12 @@
 			}
 		}
 
-		function wipeEmptyRooms() {
-			if(!confirm('Are you sure you\'d like to wipe all the conversations from the unoccupied rooms?')) return;
-			socket.emit('wipeEmptyRooms');
-			alert('All unoccupied room conversations have been cleared.')
-			location.reload();
-		}
+		// function wipeEmptyRooms() {
+		// 	if(!confirm('Are you sure you\'d like to wipe all the conversations from the unoccupied rooms?')) return;
+		// 	socket.emit('wipeEmptyRooms');
+		// 	alert('All unoccupied room conversations have been cleared.')
+		// 	location.reload();
+		// }
 
 		function newServer() {
 			let newServerName = prompt('Please enter a room to join:', serverName || 'Lobby') || serverName;
@@ -235,13 +240,13 @@
 
 
 		function sendMessage(message) {
-			let padding = '', paddingLength= Math.ceil(message.length / 30)*30 - message.length;
-			for(let i = 0; i < paddingLength; i++ ){
-				padding += ' ';
+			let padding = '', paddingLength = Math.ceil(message.length / 30) * 30 - message.length;
+			for(let i = 0; i < paddingLength; i++){
+				padding += '\0';
 			}
-
+			//padding = ''
 			crypto.setCounter(key);
-			console.log(crypto);
+
 			let ciphertext = crypto.encrypt(message + padding);
 			if(ciphertext.length > 0) {
 				socket.emit('broadcastMessage', ciphertext);
@@ -270,9 +275,13 @@
 		}
 
 		function decryptMessage(button){
-			let ciphertext = button.parentElement.childNodes[0];
-			
-			ciphertext.innerText = crypto.decrypt(ciphertext.innerText);
+			let ciphertextElement = button.parentElement.childNodes[0];
+			let ciphertext = ciphertextElement.innerText;
+			let plaintext = crypto.decrypt(ciphertext);
+			if(plaintext.includes('\0')) {
+				plaintext = plaintext.substring(0, plaintext.indexOf('\0'));
+			}
+			ciphertextElement.innerText = plaintext;
 			button.remove();
 		}
 

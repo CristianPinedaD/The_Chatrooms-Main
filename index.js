@@ -145,7 +145,7 @@ io.on('connection', (socket) => {
 	socket.on('broadcastMessage', (message) => {
 		console.log(socket.user.ipaddress + ' (' + socket.user.name + ')' + ' sent "' + message + '"');
 		if(socket.user.name == '') return;
-		message = sanitizeHtml(message).trim().substring(0, 256);
+		message = sanitizeHtml(message).trim().substring(0, 664);
 		if(message == '') return;
 
         //if the room does not exist inside the server, set it
@@ -201,13 +201,11 @@ io.on('connection', (socket) => {
 		//}
 	//});
 
-//});
+});
 
 // Start the server
 const port = process.env.PORT || 8000;
 http.listen(port, () => {
 	console.log('App is running on port ' + port);
 });
-
-
 
