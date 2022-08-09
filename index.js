@@ -179,29 +179,29 @@ io.on('connection', (socket) => {
 		}, 500); // After 100 milliseconds, alert who cleared it
 	});
 
-	socket.on('wipeEmptyRooms', () => {
-		let rooms = Object.keys(roomMessages);
-		let occupiedRooms = getRoomList();
-		for(let room of rooms) {
-			let occupied = false;
-			for(let room2 of occupiedRooms) {
-				if(room2[0] == room) {
-					if(room2[1] > 0) {
-						occupied = true;
-					}
-					break;
-				}
-			}
+	//socket.on('wipeEmptyRooms', () => {
+		//let rooms = Object.keys(roomMessages);
+		//let occupiedRooms = getRoomList();
+		//for(let room of rooms) {
+		//	let occupied = false;
+		//	for(let room2 of occupiedRooms) {
+		//		if(room2[0] == room) {
+		//			if(room2[1] > 0) {
+		//				occupied = true;
+		//			}
+		//			break;
+		//		}
+		//	}
 
-			if(!occupied) {
-				console.log('Deleting room ' + room);
-				delete roomMessages[room]
-			}
+		//	if(!occupied) {
+		//		console.log('Deleting room ' + room);
+		//		delete roomMessages[room]
+		//	}
 
-		}
-	});
+		//}
+	//});
 
-});
+//});
 
 // Start the server
 const port = process.env.PORT || 8000;
