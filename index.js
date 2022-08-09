@@ -201,13 +201,11 @@ io.on('connection', (socket) => {
 		//}
 	//});
 
-//});
+});
 
 // Start the server
 const port = process.env.PORT || 8000;
 http.listen(port, () => {
 	console.log('App is running on port ' + port);
 });
-
-
 

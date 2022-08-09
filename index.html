@@ -96,7 +96,7 @@
 				<table id='serverList' class='table  table-borderless table-hover table-dark table-condensed'></table>
 
 				<div class='btn-group w-100' role='group'>
-					//<button class='btn btn-secondary btn-sm w-25' type='button' onclick='wipeEmptyRooms()'>Clear</button>
+					<!--<button class='btn btn-secondary btn-sm w-25' type='button' onclick='wipeEmptyRooms()'>Clear</button>-->
 					<button class='btn btn-secondary btn-sm w-75' type='button' onclick='newServer()'>New Server</button>
 				</div>
 
@@ -224,12 +224,12 @@
 			}
 		}
 
-		function wipeEmptyRooms() {
-			if(!confirm('Are you sure you\'d like to wipe all the conversations from the unoccupied rooms?')) return;
-			socket.emit('wipeEmptyRooms');
-			alert('All unoccupied room conversations have been cleared.')
-			location.reload();
-		}
+		// function wipeEmptyRooms() {
+		// 	if(!confirm('Are you sure you\'d like to wipe all the conversations from the unoccupied rooms?')) return;
+		// 	socket.emit('wipeEmptyRooms');
+		// 	alert('All unoccupied room conversations have been cleared.')
+		// 	location.reload();
+		// }
 
 		function newServer() {
 			let newServerName = prompt('Please enter a room to join:', serverName || 'Lobby') || serverName;
